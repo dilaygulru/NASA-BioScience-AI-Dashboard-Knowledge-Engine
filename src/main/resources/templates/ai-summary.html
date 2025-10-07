@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroChat - Dragons AstroGenesis</title>
+    <link rel="stylesheet" href="/css/nasa.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #1e2a1a 25%, #1a2e1a 50%, #2a1a1a 75%, #2a1e1a 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            color: #c9d5c9;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            color: #a8b8a8;
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        /* Search Box Style */
+        .search-container {
+            background: rgba(42, 26, 26, 0.6);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(74, 124, 89, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 18px 24px;
+            border: 2px solid rgba(74, 124, 89, 0.4);
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-family: 'Poppins', Arial, sans-serif;
+            transition: all 0.3s;
+            background: rgba(26, 26, 26, 0.7);
+            color: #c9d5c9;
+        }
+
+        .search-box input::placeholder {
+            color: #a8b8a8;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4a7c59;
+            box-shadow: 0 0 0 4px rgba(74, 124, 89, 0.15);
+        }
+
+        .search-box button {
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #4a7c59, #8b4536);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-box button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 124, 89, 0.4);
+        }
+
+        .search-box button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Example Questions */
+        .example-questions {
+            margin-top: 30px;
+        }
+
+        .example-questions h3 {
+            color: #c9d5c9;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .example-card {
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15));
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #4a7c59;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(74, 124, 89, 0.3);
+        }
+
+        .example-card .icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .example-card .title {
+            color: #c9d5c9;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .example-card .description {
+            color: #a8b8a8;
+            font-size: 0.9rem;
+        }
+
+        /* Loading Indicator */
+        .loading-container {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: rgba(42, 26, 26, 0.6);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(74, 124, 89, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .loading-container.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(74, 124, 89, 0.2);
+            border-top: 4px solid #4a7c59;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #a8b8a8;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Results Container */
+        .results-container {
+            display: none;
+            background: rgba(42, 26, 26, 0.6);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(74, 124, 89, 0.3);
+        }
+
+        .results-container.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-header {
+            border-bottom: 3px solid #4a7c59;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .results-header h2 {
+            color: #c9d5c9;
+            font-size: 2rem;
+            margin: 0 0 10px 0;
+        }
+
+        .query-display {
+            color: #a8b8a8;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        /* Section Styles */
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.12), rgba(139, 69, 54, 0.12));
+            border-radius: 16px;
+            border-left: 4px solid #4a7c59;
+        }
+
+        .section-title {
+            color: #c9d5c9;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-content {
+            color: #a8b8a8;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .section-content h2 {
+            color: #c9d5c9;
+            font-size: 1.4rem;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+
+        .section-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .section-content p {
+            margin: 15px 0;
+        }
+
+        .section-content strong {
+            font-weight: 600;
+            color: #c9d5c9;
+        }
+
+        .section-content ul, .section-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .section-content li {
+            margin: 10px 0;
+        }
+
+        /* Key Findings Pills */
+        .findings-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .finding-pill {
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.2), rgba(139, 69, 54, 0.2));
+            padding: 14px 20px;
+            border-radius: 25px;
+            border: 2px solid #4a7c59;
+            color: #c9d5c9;
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .chart-wrapper {
+            background: rgba(26, 26, 26, 0.6);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(74, 124, 89, 0.2);
+        }
+
+        .chart-title {
+            color: #c9d5c9;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-insight {
+            color: #a8b8a8;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(74, 124, 89, 0.15);
+            border-radius: 10px;
+            font-style: italic;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(26, 26, 26, 0.6);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #4a7c59, #8b4536);
+            color: white;
+        }
+
+        .data-table th {
+            padding: 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .data-table td {
+            padding: 15px 18px;
+            border-bottom: 1px solid rgba(74, 124, 89, 0.2);
+            color: #a8b8a8;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(74, 124, 89, 0.1);
+        }
+
+        .table-insight {
+            color: #a8b8a8;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(74, 124, 89, 0.15);
+            border-radius: 10px;
+            font-style: italic;
+        }
+
+        /* Sources/Citations */
+        .sources-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .source-item {
+            background: rgba(26, 26, 26, 0.6);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #4a7c59;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .source-title {
+            color: #c9d5c9;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .source-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #a8b8a8;
+        }
+
+        .source-meta a {
+            color: #4a7c59;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .source-meta a:hover {
+            color: #8b4536;
+            text-decoration: underline;
+        }
+
+        /* Recommendations */
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .recommendation-card {
+            background: rgba(26, 26, 26, 0.6);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(74, 124, 89, 0.2);
+        }
+
+        .recommendation-card h4 {
+            color: #c9d5c9;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .recommendation-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .recommendation-card li {
+            padding: 10px 0;
+            color: #a8b8a8;
+            border-bottom: 1px solid rgba(74, 124, 89, 0.2);
+        }
+
+        .recommendation-card li:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-box button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .examples-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <img src="/images/mylogo.jpg" alt="Dragons AstroGenesis Logo" class="logo">
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/report">AstroLog</a></li>
+                <li><a href="/publications">AstroHistory</a></li>
+                <li><a href="/ai" class="active">AstroChat</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="content-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>🔬 AstroChat AI Research Assistant</h1>
+            <p>Ask questions about NASA bioscience research and get comprehensive AI-powered analysis</p>
+        </div>
+
+        <!-- Search Container -->
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Ask about space bioscience research... (e.g., effects of microgravity on bone density)">
+                <button id="searchBtn">
+                    <span>🚀 Analyze</span>
+                </button>
+            </div>
+
+            <!-- Example Questions -->
+            <div class="example-questions">
+                <h3>💡 Try these examples:</h3>
+                <div class="examples-grid">
+                    <div class="example-card" onclick="askExample('What are the effects of microgravity on bone density?')">
+                        <div class="icon">🦴</div>
+                        <div class="title">Bone Health in Space</div>
+                        <div class="description">Effects of microgravity on bone density</div>
+                    </div>
+                    <div class="example-card" onclick="askExample('How does radiation affect astronaut health?')">
+                        <div class="icon">☢️</div>
+                        <div class="title">Radiation Effects</div>
+                        <div class="description">Impact of radiation on human health</div>
+                    </div>
+                    <div class="example-card" onclick="askExample('What research has been done on plant growth in space?')">
+                        <div class="icon">🌱</div>
+                        <div class="title">Space Agriculture</div>
+                        <div class="description">Growing plants in microgravity</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading-container" id="loadingContainer">
+            <div class="spinner"></div>
+            <div class="loading-text">🧠 Analyzing research data with AI...</div>
+        </div>
+
+        <!-- Results Container -->
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <h2>📊 Research Analysis Results</h2>
+                <p class="query-display" id="queryDisplay"></p>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2025 Dragons AstroGenesis | NASA BioScience AI Dashboard</p>
+    </footer>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsContent = document.getElementById('resultsContent');
+        const queryDisplay = document.getElementById('queryDisplay');
+        let currentCharts = [];
+
+        // Enter to search
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+
+        searchBtn.addEventListener('click', performSearch);
+
+        function askExample(question) {
+            searchInput.value = question;
+            performSearch();
+        }
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                alert('Please enter a research question');
+                return;
+            }
+
+            // Show loading, hide results
+            loadingContainer.classList.add('visible');
+            resultsContainer.classList.remove('visible');
+            searchBtn.disabled = true;
+
+            // Clear previous charts
+            currentCharts.forEach(chart => chart.destroy());
+            currentCharts = [];
+
+            try {
+                const response = await fetch('/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query, audience: 'general' })
+                });
+
+                const data = await response.json();
+
+                // Hide loading, show results
+                loadingContainer.classList.remove('visible');
+                resultsContainer.classList.add('visible');
+                searchBtn.disabled = false;
+
+                // Display results
+                displayResults(query, data);
+
+            } catch (error) {
+                loadingContainer.classList.remove('visible');
+                alert('An error occurred. Please try again.');
+                console.error('Error:', error);
+                searchBtn.disabled = false;
+            }
+        }
+
+        function displayResults(query, data) {
+            queryDisplay.textContent = `"${query}"`;
+            resultsContent.innerHTML = '';
+
+            // 1. Summary Section
+            if (data.summary) {
+                const summarySection = createSection('📄 Comprehensive Summary', data.summary);
+                resultsContent.appendChild(summarySection);
+            }
+
+            // 2. Key Findings
+            if (data.keyFindings && data.keyFindings.length > 0) {
+                const findingsHtml = `
+                    <div class="findings-grid">
+                        ${data.keyFindings.map(f => `<div class="finding-pill">✓ ${f}</div>`).join('')}
+                    </div>
+                `;
+                const findingsSection = createSection('🔬 Key Findings', findingsHtml);
+                resultsContent.appendChild(findingsSection);
+            }
+
+            // 3. Charts
+            if (data.charts && data.charts.length > 0) {
+                const chartsHtml = '<div class="charts-container">' +
+                    data.charts.map((chart, idx) => `
+                        <div class="chart-wrapper">
+                            <div class="chart-title">${chart.title || 'Chart ' + (idx + 1)}</div>
+                            <canvas id="chart-${idx}"></canvas>
+                            ${chart.insight ? `<div class="chart-insight">💡 ${chart.insight}</div>` : ''}
+                        </div>
+                    `).join('') + '</div>';
+                const chartsSection = createSection('📊 Data Visualization', chartsHtml);
+                resultsContent.appendChild(chartsSection);
+
+                // Render charts after DOM update
+                setTimeout(() => {
+                    data.charts.forEach((chart, idx) => {
+                        renderChart(`chart-${idx}`, chart);
+                    });
+                }, 100);
+            }
+
+            // 4. Tables
+            if (data.tables && data.tables.length > 0) {
+                const tablesHtml = data.tables.map(table => `
+                    <h4 style="color: #c9d5c9; margin: 20px 0 10px 0;">${table.title || 'Data Table'}</h4>
+                    <table class="data-table">
+                        <thead>
+                            <tr>${table.columns.map(col => `<th>${col}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody>
+                            ${table.rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
+                        </tbody>
+                    </table>
+                    ${table.insight ? `<div class="table-insight">💡 ${table.insight}</div>` : ''}
+                `).join('');
+                const tablesSection = createSection('📋 Comparative Data', tablesHtml);
+                resultsContent.appendChild(tablesSection);
+            }
+
+            // 5. Scientific Progress
+            if (data.scientificProgress) {
+                const progressHtml = `
+                    <p><strong>Timeline:</strong> ${data.scientificProgress.timeline || 'N/A'}</p>
+                    <p><strong>Impact Level:</strong> <span style="text-transform: uppercase; color: #4a7c59;">${data.scientificProgress.impactLevel || 'N/A'}</span></p>
+                    <ul>${(data.scientificProgress.achievements || []).map(a => `<li>${a}</li>`).join('')}</ul>
+                `;
+                const progressSection = createSection('🚀 Scientific Progress', progressHtml);
+                resultsContent.appendChild(progressSection);
+            }
+
+            // 6. Knowledge Gaps
+            if (data.knowledgeGaps) {
+                const gapsHtml = `
+                    <p><strong>Research Priority:</strong> <span style="text-transform: uppercase; color: #4a7c59;">${data.knowledgeGaps.researchPriority || 'N/A'}</span></p>
+                    <h4 style="color: #c9d5c9; margin-top: 15px;">Critical Gaps:</h4>
+                    <ul>${(data.knowledgeGaps.criticalGaps || []).map(g => `<li>${g}</li>`).join('')}</ul>
+                    <h4 style="color: #c9d5c9; margin-top: 15px;">Suggested Studies:</h4>
+                    <ul>${(data.knowledgeGaps.suggestedStudies || []).map(s => `<li>${s}</li>`).join('')}</ul>
+                `;
+                const gapsSection = createSection('🔍 Knowledge Gaps', gapsHtml);
+                resultsContent.appendChild(gapsSection);
+            }
+
+            // 7. Mission Relevance (only show if applicable)
+            if (data.missionRelevance && data.missionRelevance.applicable !== false) {
+                let missionHtml = '';
+
+                if (data.missionRelevance.moonMissions) {
+                    missionHtml += `<p><strong>🌙 Moon Missions:</strong> ${data.missionRelevance.moonMissions}</p>`;
+                }
+
+                if (data.missionRelevance.marsMissions) {
+                    missionHtml += `<p><strong>🔴 Mars Missions:</strong> ${data.missionRelevance.marsMissions}</p>`;
+                }
+
+                if (data.missionRelevance.riskFactors && data.missionRelevance.riskFactors.length > 0) {
+                    missionHtml += `<h4 style="color: #c9d5c9; margin-top: 15px;">Risk Factors:</h4>`;
+                    missionHtml += `<ul>${data.missionRelevance.riskFactors.map(r => `<li>${r}</li>`).join('')}</ul>`;
+                }
+
+                if (data.missionRelevance.mitigationStrategies && data.missionRelevance.mitigationStrategies.length > 0) {
+                    missionHtml += `<h4 style="color: #c9d5c9; margin-top: 15px;">Mitigation Strategies:</h4>`;
+                    missionHtml += `<ul>${data.missionRelevance.mitigationStrategies.map(m => `<li>${m}</li>`).join('')}</ul>`;
+                }
+
+                // Only add section if there's actual content
+                if (missionHtml) {
+                    const missionSection = createSection('🛰️ Mission Relevance', missionHtml);
+                    resultsContent.appendChild(missionSection);
+                }
+            }
+
+            // 8. Recommendations
+            if (data.recommendations) {
+                const recsHtml = `
+                    <div class="recommendations-grid">
+                        <div class="recommendation-card">
+                            <h4>👨‍🔬 For Scientists</h4>
+                            <ul>${(data.recommendations.forScientists || []).map(r => `<li>${r}</li>`).join('')}</ul>
+                        </div>
+                        <div class="recommendation-card">
+                            <h4>👔 For Managers</h4>
+                            <ul>${(data.recommendations.forManagers || []).map(r => `<li>${r}</li>`).join('')}</ul>
+                        </div>
+                        <div class="recommendation-card">
+                            <h4>🏗️ For Mission Planners</h4>
+                            <ul>${(data.recommendations.forMissionPlanners || []).map(r => `<li>${r}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+                `;
+                const recsSection = createSection('💡 Recommendations', recsHtml);
+                resultsContent.appendChild(recsSection);
+            }
+
+            // 9. Sources
+            if (data.sourcesMetadata && data.sourcesMetadata.length > 0) {
+                const sourcesHtml = `
+                    <div class="sources-list">
+                        ${data.sourcesMetadata.map((source, idx) => `
+                            <div class="source-item">
+                                <div class="source-title">${source.title}</div>
+                                <div class="source-meta">
+                                    ${source.link ? `<span>🔗 <a href="${source.link}" target="_blank">View Article</a></span>` : ''}
+                                    ${source.doi ? `<span>📄 DOI: ${source.doi}</span>` : ''}
+                                    ${source.osdrId ? `<span>🛰️ OSDR: ${source.osdrId}</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                const sourcesSection = createSection('📚 Sources & References', sourcesHtml);
+                resultsContent.appendChild(sourcesSection);
+            }
+
+            // Scroll to results
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function createSection(title, content) {
+            const section = document.createElement('div');
+            section.className = 'section';
+            section.innerHTML = `
+                <div class="section-title">${title}</div>
+                <div class="section-content">${content}</div>
+            `;
+            return section;
+        }
+
+        function renderChart(canvasId, chartData) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+
+            const chart = new Chart(ctx, {
+                type: chartData.type || 'bar',
+                data: {
+                    labels: chartData.x || [],
+                    datasets: [{
+                        label: chartData.title || 'Data',
+                        data: chartData.y || [],
+                        backgroundColor: chartData.backgroundColor || ['rgba(82, 183, 136, 0.6)'],
+                        borderColor: chartData.borderColor || ['rgba(82, 183, 136, 1)'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            currentCharts.push(chart);
+        }
+    </script>
+</body>
+</html>

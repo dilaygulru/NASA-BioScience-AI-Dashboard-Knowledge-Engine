@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Dragons AstroGenesis</title>
+    <link rel="stylesheet" href="/css/nasa.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #1e2a1a 25%, #1a2e1a 50%, #2a1a1a 75%, #2a1e1a 100%);
+        }
+
+        .content-wrapper {
+            max-width: 1600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-header h1 {
+            color: #c9d5c9;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            color: #a8b8a8;
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        /* Team Section */
+        .team-section {
+            background: rgba(42, 26, 26, 0.6);
+            border-radius: 20px;
+            padding: 50px 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            margin-bottom: 40px;
+            border: 1px solid rgba(74, 124, 89, 0.3);
+        }
+
+        .team-section h2 {
+            color: #c9d5c9;
+            font-size: 1.75rem;
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: 600;
+        }
+
+        .team-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 35px;
+            margin-top: 30px;
+        }
+
+        .team-card {
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15));
+            padding: 35px;
+            border-radius: 20px;
+            border-left: 4px solid #4a7c59;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .team-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(74, 124, 89, 0.4);
+        }
+
+        .profile-pic {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #4a7c59;
+            box-shadow: 0 4px 15px rgba(74, 124, 89, 0.4);
+        }
+
+        .profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .team-card h3 {
+            color: #c9d5c9;
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .team-card .university {
+            color: #a8b8a8;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .team-card .department {
+            color: #8b4536;
+            font-size: 0.875rem;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .social-btn.email {
+            background: linear-gradient(135deg, #4a7c59, #8b4536);
+            color: white;
+        }
+
+        .social-btn.email:hover {
+            background: linear-gradient(135deg, #3a5c42, #6d3428);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(74, 124, 89, 0.4);
+        }
+
+        .social-btn.linkedin {
+            background: linear-gradient(135deg, #0077b5, #0099d6);
+            color: white;
+        }
+
+        .social-btn.linkedin:hover {
+            background: linear-gradient(135deg, #005582, #0077b5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 119, 181, 0.4);
+        }
+
+        /* About Section */
+        .about-section {
+            background: rgba(42, 26, 26, 0.6);
+            border-radius: 20px;
+            padding: 50px 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            margin-bottom: 40px;
+            border: 1px solid rgba(74, 124, 89, 0.3);
+        }
+
+        .about-section h2 {
+            color: #c9d5c9;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .about-section h3 {
+            color: #d4a59a;
+            font-size: 1.6rem;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .about-section p {
+            color: #a8b8a8;
+            line-height: 1.8;
+            font-size: 1.05rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15));
+            padding: 30px;
+            border-radius: 16px;
+            border-left: 4px solid #4a7c59;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(74, 124, 89, 0.4);
+        }
+
+        .feature-card h4 {
+            color: #c9d5c9;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            font-size: 1rem;
+            margin: 0;
+            color: #a8b8a8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .team-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <img src="/images/mylogo.jpg" alt="Dragons AstroGenesis Logo" class="logo">
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/report">AstroLog</a></li>
+                <li><a href="/publications">AstroHistory</a></li>
+                <li><a href="/ai">AstroChat</a></li>
+                <li><a href="/about" class="active">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="content-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>🚀 About Dragons AstroGenesis</h1>
+            <p>Meet our team and learn about our mission</p>
+        </div>
+
+        <!-- Team Section -->
+        <div class="team-section">
+            <h2>👥 Our Team</h2>
+            <div class="team-cards">
+                <!-- Mehmet Ali Ergen -->
+                <div class="team-card">
+                    <div class="profile-pic">
+                        <img src="/images/mae.jpg" alt="Mehmet Ali Ergen">
+                    </div>
+                    <h3>Mehmet Ali Ergen</h3>
+                    <p class="university">Marmara University</p>
+                    <p class="department">Metallurgical & Materials Engineering</p>
+                    <div class="social-buttons">
+                        <a href="mailto:mehmetaliergen@gmail.com" class="social-btn email" onclick="return true;">
+                            📧 Email
+                        </a>
+                        <a href="https://www.linkedin.com/in/mehmetali-ergen/" target="_blank" rel="noopener noreferrer" class="social-btn linkedin">
+                            💼 LinkedIn
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Dilay Gülru Özak -->
+                <div class="team-card">
+                    <div class="profile-pic">
+                        <img src="/images/dgö.jpg" alt="Dilay Gülru Özak">
+                    </div>
+                    <h3>Dilay Gülru Özak</h3>
+                    <p class="university">Sakarya University</p>
+                    <p class="department">Software Engineering</p>
+                    <div class="social-buttons">
+                        <a href="mailto:dilaygulru@gmail.com" class="social-btn email" onclick="return true;">
+                            📧 Email
+                        </a>
+                        <a href="https://www.linkedin.com/in/dilaygulruozak/" target="_blank" rel="noopener noreferrer" class="social-btn linkedin">
+                            💼 LinkedIn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Project Section -->
+        <div class="about-section">
+            <h2>🧬 About the Project</h2>
+
+            <p>
+                <strong>Dragons AstroGenesis</strong> is a cutting-edge NASA-inspired project designed to revolutionize how we explore and understand bioscience research related to human space exploration. By bridging the gap between complex scientific data and actionable insights, we empower scientists, mission planners, and researchers to make informed decisions for future space missions.
+            </p>
+
+            <h3>🚀 Our Mission</h3>
+            <p>
+                To unite artificial intelligence and space biology, transforming raw mission data into living insights about cells, growth, adaptation, and survival in the challenging environment of space. We aim to make NASA's vast repository of 608+ bioscience publications accessible, analyzable, and actionable.
+            </p>
+
+            <h3>🔬 What We Do</h3>
+            <p>
+                Using advanced AI technologies, semantic search, and knowledge graphs, Dragons AstroGenesis provides:
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🧠 AI-Powered Analysis</h4>
+                    <p>Generate comprehensive research summaries, identify trends, and discover knowledge gaps using state-of-the-art language models.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Data Visualization</h4>
+                    <p>Transform complex research findings into interactive charts, graphs, and tables for better understanding.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔍 Semantic Search</h4>
+                    <p>Find relevant research papers instantly using intelligent semantic search powered by vector embeddings.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💡 Actionable Insights</h4>
+                    <p>Get tailored recommendations for scientists, managers, and mission architects based on your specific needs.</p>
+                </div>
+            </div>
+
+            <h3>🌟 Key Features</h3>
+            <p>
+                <strong>AstroLog:</strong> Analyze NASA's 608+ bioscience publications with AI-powered insights, visualizations, and comprehensive reports.<br><br>
+                <strong>AstroHistory:</strong> Browse and search through comprehensive space biology research archives and datasets from NASA's Open Science Data Repository (OSDR).<br><br>
+                <strong>AstroChat:</strong> Ask questions about space biology and get intelligent, research-backed answers instantly.
+            </p>
+
+            <h3>🎯 Who We Serve</h3>
+            <p>
+                <strong>Scientists:</strong> Generate new hypotheses, explore unexplored variables, and discover mechanistic insights.<br><br>
+                <strong>Research Managers:</strong> Identify high-impact investment opportunities and strategic research priorities.<br><br>
+                <strong>Mission Architects:</strong> Understand operational constraints, health risks, and life support requirements for Moon and Mars missions.
+            </p>
+
+            <h3>🌌 The Future</h3>
+            <p>
+                As humanity prepares for long-duration space missions to the Moon and Mars, understanding the biological impacts of space travel becomes critical. Dragons AstroGenesis is your partner in this journey—transforming data into discovery, and discovery into the future of space exploration.
+            </p>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2025 Dragons AstroGenesis | NASA BioScience AI Dashboard</p>
+    </footer>
+</body>
+</html>

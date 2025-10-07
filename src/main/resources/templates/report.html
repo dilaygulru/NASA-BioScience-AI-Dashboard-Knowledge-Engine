@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroLog - Dragons AstroGenesis</title>
+    <link rel="stylesheet" href="/css/nasa.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #1e2a1a 25%, #1a2e1a 50%, #2a1a1a 75%, #2a1e1a 100%);
+        }
+
+        .content-wrapper {
+            max-width: 1600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            color: #c9d5c9;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            color: #a8b8a8;
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        .reports-container {
+            background: rgba(42, 26, 26, 0.6);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(74, 124, 89, 0.3);
+        }
+
+        .report-card {
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15));
+            padding: 25px;
+            border-radius: 16px;
+            border-left: 4px solid #4a7c59;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(74, 124, 89, 0.3);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .report-query {
+            color: #c9d5c9;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+        }
+
+        .report-date {
+            color: #8b4536;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            margin-left: 15px;
+        }
+
+        .report-summary {
+            color: #a8b8a8;
+            line-height: 1.6;
+            margin: 10px 0;
+            font-size: 0.95rem;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-view, .btn-delete {
+            padding: 8px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #4a7c59, #8b4536);
+            color: white;
+        }
+
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 124, 89, 0.4);
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: 2px solid #8b4536;
+            color: #d4a59a;
+        }
+
+        .btn-delete:hover {
+            background: #8b4536;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #a8b8a8;
+        }
+
+        .empty-state h3 {
+            color: #c9d5c9;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        .empty-state a {
+            display: inline-block;
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #4a7c59, #8b4536);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .empty-state a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(74, 124, 89, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a8b8a8;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(74, 124, 89, 0.2);
+            border-top: 4px solid #4a7c59;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal for detailed view */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: rgba(42, 26, 26, 0.95);
+            margin: 50px auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(74, 124, 89, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #4a7c59;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            color: #c9d5c9;
+            margin: 0;
+        }
+
+        .close {
+            color: #a8b8a8;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: #c9d5c9;
+        }
+
+        .modal-section {
+            margin: 25px 0;
+        }
+
+        .modal-section h3 {
+            color: #c9d5c9;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .modal-section p {
+            color: #a8b8a8;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <img src="/images/mylogo.jpg" alt="Dragons AstroGenesis Logo" class="logo">
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/report" class="active">AstroLog</a></li>
+                <li><a href="/publications">AstroHistory</a></li>
+                <li><a href="/ai">AstroChat</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="content-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>📊 AstroLog</h1>
+            <p>Your AstroChat conversation history and research reports</p>
+        </div>
+
+        <!-- Reports Container -->
+        <div class="reports-container">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading your chat history...</p>
+            </div>
+
+            <div id="reportsContent" style="display: none;"></div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>📭 No conversation history yet</h3>
+                <p>Start chatting with AstroChat to see your conversations here!</p>
+                <a href="/ai">🚀 Go to AstroChat</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for detailed view -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Conversation Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2025 Dragons AstroGenesis | NASA BioScience AI Dashboard</p>
+    </footer>
+
+    <script>
+        async function loadChatHistory() {
+            const loading = document.getElementById('loading');
+            const reportsContent = document.getElementById('reportsContent');
+            const emptyState = document.getElementById('emptyState');
+
+            try {
+                const response = await fetch('/report/history');
+                const histories = await response.json();
+
+                loading.style.display = 'none';
+
+                if (histories.length === 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    reportsContent.style.display = 'block';
+                    reportsContent.innerHTML = histories.map(history => `
+                        <div class="report-card" onclick="viewDetails(${history.id})">
+                            <div class="report-header">
+                                <h3 class="report-query">${history.query}</h3>
+                                <span class="report-date">📅 ${history.date}</span>
+                            </div>
+                            <p class="report-summary">${history.summary.substring(0, 200)}...</p>
+                            <div class="report-actions" onclick="event.stopPropagation()">
+                                <button class="btn-view" onclick="viewDetails(${history.id})">👁️ View Details</button>
+                                <a href="/report/history/${history.id}/pdf" class="btn-view" style="text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                    📄 Download PDF
+                                </a>
+                                <button class="btn-delete" onclick="deleteHistory(${history.id})">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                console.error('Error loading chat history:', error);
+                reportsContent.innerHTML = '<div class="empty-state"><h3>⚠️ Error loading history</h3><p>Please try again later.</p></div>';
+                reportsContent.style.display = 'block';
+            }
+        }
+
+        async function viewDetails(id) {
+            const modal = document.getElementById('detailModal');
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+
+            modal.style.display = 'block';
+            modalBody.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading details...</p></div>';
+
+            try {
+                const response = await fetch(`/report/history/${id}`);
+                const details = await response.json();
+
+                modalTitle.textContent = details.query;
+
+                let html = '<div class="modal-section">';
+                html += `<h3>📄 Summary</h3><p>${details.summary}</p>`;
+                html += '</div>';
+
+                if (details.keyFindings && details.keyFindings !== 'null') {
+                    const findings = JSON.parse(details.keyFindings);
+                    if (findings && findings.length > 0) {
+                        html += '<div class="modal-section">';
+                        html += '<h3>🔬 Key Findings</h3><ul>';
+                        findings.forEach(finding => {
+                            html += `<li>${finding}</li>`;
+                        });
+                        html += '</ul></div>';
+                    }
+                }
+
+                html += `<div class="modal-section"><p><strong>Created:</strong> ${details.createdAt}</p></div>`;
+
+                modalBody.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading details:', error);
+                modalBody.innerHTML = '<div class="empty-state"><h3>⚠️ Error loading details</h3><p>Please try again.</p></div>';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Delete single history
+        async function deleteHistory(id) {
+            if (!confirm('Are you sure you want to delete this conversation?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/report/history/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Conversation deleted successfully!');
+                    loadChatHistory(); // Reload list
+                } else {
+                    alert('Failed to delete conversation');
+                }
+            } catch (error) {
+                console.error('Error deleting history:', error);
+                alert('Error deleting conversation');
+            }
+        }
+
+        // Load on page load
+        loadChatHistory();
+    </script>
+</body>
+</html>

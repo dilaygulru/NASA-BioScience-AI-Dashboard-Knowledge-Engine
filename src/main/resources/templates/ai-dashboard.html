@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AstroLog - Dragons AstroGenesis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/css/nasa.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .glass-effect {
+      background: rgba(42, 26, 26, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(139, 69, 54, 0.3);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+    }
+    .chart-container {
+      position: relative;
+      height: 250px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #4a7c59, #8b4536);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s;
+      border: 1px solid rgba(74, 124, 89, 0.3);
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(74, 124, 89, 0.5);
+    }
+    .finding-item {
+      border-left: 4px solid #4a7c59;
+      padding-left: 15px;
+      margin-bottom: 12px;
+      background: rgba(74, 124, 89, 0.15);
+      padding: 12px 15px;
+      border-radius: 8px;
+      color: #c9d5c9;
+    }
+    .recommendation-item {
+      background: rgba(139, 69, 54, 0.15);
+      border-left: 4px solid #8b4536;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      color: #d4a59a;
+    }
+    .audience-btn {
+      background: rgba(42, 26, 26, 0.5);
+      border: 2px solid rgba(74, 124, 89, 0.3);
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      color: #b8c9b8;
+    }
+    .audience-btn:hover {
+      border-color: #4a7c59;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(74, 124, 89, 0.4);
+    }
+    .audience-btn.active {
+      background: linear-gradient(135deg, #4a7c59, #8b4536);
+      color: white;
+      border-color: #4a7c59;
+    }
+    .section-highlight {
+      background: linear-gradient(to right, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15));
+      border-left: 4px solid #4a7c59;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      color: #c9d5c9;
+    }
+    .loading-spinner {
+      border: 4px solid rgba(74, 124, 89, 0.3);
+      border-top: 4px solid #4a7c59;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .content-wrapper {
+      max-width: 1600px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .page-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .page-header h1 {
+      color: #c9d5c9;
+      font-size: 3rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+    .page-header p {
+      color: #a8b8a8;
+      font-size: 1.1rem;
+      font-weight: 300;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <img src="/images/mylogo.jpg" alt="Dragons AstroGenesis Logo" class="logo">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/report">AstroLog</a></li>
+      <li><a href="/publications">AstroHistory</a></li>
+      <li><a href="/ai" class="active">AstroChat</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="content-wrapper">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>💬 AstroChat AI Assistant</h1>
+    <p>Comprehensive NASA BioScience Research Analysis with AI</p>
+  </div>
+
+  <!-- Debug Info (remove after testing) -->
+  <div id="debugInfo" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded hidden">
+    <p class="font-bold">🐛 Debug Mode</p>
+    <p id="debugText" class="text-sm"></p>
+  </div>
+
+  <!-- Chat Input -->
+  <div class="glass-effect p-8 rounded-2xl shadow-2xl" style="margin-bottom: 40px;">
+  <!-- Audience Selector -->
+  <div class="mb-6">
+    <label class="block text-sm font-bold mb-3" style="color: #c9d5c9;">🎯 Select Your Role (Target Audience):</label>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+      <button class="audience-btn active" data-audience="general">
+        <span class="text-2xl">👥</span>
+        <span class="block text-sm font-semibold mt-1">General</span>
+      </button>
+      <button class="audience-btn" data-audience="scientist">
+        <span class="text-2xl">🔬</span>
+        <span class="block text-sm font-semibold mt-1">Scientist</span>
+      </button>
+      <button class="audience-btn" data-audience="manager">
+        <span class="text-2xl">💼</span>
+        <span class="block text-sm font-semibold mt-1">Manager</span>
+      </button>
+      <button class="audience-btn" data-audience="architect">
+        <span class="text-2xl">🚀</span>
+        <span class="block text-sm font-semibold mt-1">Mission Architect</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Query Input -->
+  <textarea id="userInput" class="w-full p-4 border-2 rounded-lg mb-4 focus:outline-none" style="border-color: rgba(74, 124, 89, 0.3); background: rgba(26, 26, 26, 0.5); color: #c9d5c9;" rows="4"
+            placeholder="Ask about NASA bioscience research... Examples:&#10;• 'What are the effects of microgravity on bone density?'&#10;• 'Identify research gaps in radiation protection for Mars missions'&#10;• 'Where do studies disagree on plant growth in space?'"></textarea>
+
+  <div class="flex gap-4">
+    <button id="sendBtn" class="flex-1 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all" style="background: linear-gradient(135deg, #4a7c59, #8b4536);">
+      🧠 Analyze with AI
+    </button>
+    <button id="downloadBtn" class="text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all hidden" style="background: linear-gradient(135deg, #3a5c42, #6d3428);">
+      📥 Download PDF Report
+    </button>
+  </div>
+</div>
+
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="hidden mt-8">
+  <div class="loading-spinner mx-auto"></div>
+  <p class="text-white text-center mt-4">Analyzing data with AI...</p>
+</div>
+
+<!-- AI Output -->
+<div id="aiOutput" class="w-full max-w-7xl mt-8 glass-effect p-8 rounded-2xl shadow-2xl hidden">
+
+  <!-- Statistics Cards -->
+  <div id="statsContainer" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 hidden"></div>
+
+  <!-- Summary Section -->
+  <div class="mb-8" style="max-width: 1000px; margin: 0 auto 32px auto;">
+    <h2 class="text-2xl font-bold mb-4 pb-2" style="color: #c9d5c9; border-bottom: 2px solid #4a7c59;">📊 Comprehensive Research Synthesis</h2>
+    <div id="summaryText" class="text-base leading-relaxed" style="color: #a8b8a8;"></div>
+  </div>
+
+  <!-- Scientific Progress Section -->
+  <div id="progressContainer" class="mb-8 hidden" style="max-width: 1000px; margin: 0 auto 32px auto;">
+    <h3 class="text-xl font-bold mb-3" style="color: #c9d5c9;">🚀 Scientific Progress & Achievements</h3>
+    <div class="section-highlight">
+      <div id="progressContent" style="font-size: 0.95rem;"></div>
+    </div>
+  </div>
+
+  <!-- Knowledge Gaps Section -->
+  <div id="gapsContainer" class="mb-8 hidden" style="max-width: 1000px; margin: 0 auto 32px auto;">
+    <h3 class="text-xl font-bold mb-3" style="color: #c9d5c9;">🔍 Knowledge Gaps & Research Priorities</h3>
+    <div class="section-highlight" style="background: linear-gradient(to right, rgba(139, 69, 54, 0.2), rgba(139, 69, 54, 0.1)); border-left-color: #8b4536;">
+      <div id="gapsContent" style="font-size: 0.95rem;"></div>
+    </div>
+  </div>
+
+  <!-- Consensus/Disagreement Section -->
+  <div id="consensusContainer" class="mb-8 hidden" style="max-width: 1000px; margin: 0 auto 32px auto;">
+    <h3 class="text-xl font-bold mb-3" style="color: #c9d5c9;">⚖️ Scientific Consensus & Debates</h3>
+    <div class="section-highlight" style="background: linear-gradient(to right, rgba(74, 124, 89, 0.2), rgba(74, 124, 89, 0.1)); border-left-color: #4a7c59;">
+      <div id="consensusContent" style="font-size: 0.95rem;"></div>
+    </div>
+  </div>
+
+  <!-- Mission Relevance Section -->
+  <div id="missionContainer" class="mb-8 hidden" style="max-width: 1000px; margin: 0 auto 32px auto;">
+    <h3 class="text-xl font-bold mb-3" style="color: #c9d5c9;">🌙🔴 Mission Relevance (Moon & Mars)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="p-6 rounded-lg border-l-4" style="background: rgba(74, 124, 89, 0.15); border-left-color: #4a7c59;">
+        <h4 class="font-bold text-base mb-2" style="color: #c9d5c9;">🌙 Lunar Missions</h4>
+        <p id="moonRelevance" class="text-sm" style="color: #a8b8a8;"></p>
+      </div>
+      <div class="p-6 rounded-lg border-l-4" style="background: rgba(139, 69, 54, 0.15); border-left-color: #8b4536;">
+        <h4 class="font-bold text-base mb-2" style="color: #d4a59a;">🔴 Mars Missions</h4>
+        <p id="marsRelevance" class="text-sm" style="color: #a8b8a8;"></p>
+      </div>
+    </div>
+    <div class="mt-6">
+      <h4 class="font-bold text-base mb-3">⚠️ Risk Factors & Mitigation Strategies</h4>
+      <div id="riskMitigationContent" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="font-size: 0.875rem;"></div>
+    </div>
+  </div>
+
+  <!-- Key Findings -->
+  <div id="findingsContainer" class="mb-8 hidden" style="max-width: 1000px; margin: 0 auto 32px auto;">
+    <h3 class="text-xl font-bold mb-3" style="color: #c9d5c9;">🔬 Key Findings</h3>
+    <div id="findingsList" style="font-size: 0.95rem;"></div>
+  </div>
+
+  <!-- Charts Section -->
+  <div id="chartsContainer" class="mb-8"></div>
+
+  <!-- Tables Section -->
+  <div id="tablesContainer" class="mb-8"></div>
+
+  <!-- Recommendations by Audience -->
+  <div id="recommendationsContainer" class="hidden" style="max-width: 1000px; margin: 0 auto 32px auto;">
+    <h3 class="text-xl font-bold mb-3" style="color: #c9d5c9;">💡 Recommendations & Action Items</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div id="scientistRec" class="p-6 rounded-lg border-l-4 hidden" style="background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15)); border-left-color: #4a7c59;">
+        <h4 class="font-bold text-base mb-2" style="color: #c9d5c9;">🔬 For Scientists</h4>
+        <ul class="list-disc list-inside space-y-1 text-sm" style="color: #a8b8a8;"></ul>
+      </div>
+      <div id="managerRec" class="p-6 rounded-lg border-l-4 hidden" style="background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15)); border-left-color: #8b4536;">
+        <h4 class="font-bold text-base mb-2" style="color: #c9d5c9;">💼 For Managers</h4>
+        <ul class="list-disc list-inside space-y-1 text-sm" style="color: #a8b8a8;"></ul>
+      </div>
+      <div id="architectRec" class="p-6 rounded-lg border-l-4 hidden" style="background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15)); border-left-color: #4a7c59;">
+        <h4 class="font-bold text-base mb-2" style="color: #c9d5c9;">🚀 For Mission Architects</h4>
+        <ul class="list-disc list-inside space-y-1 text-sm" style="color: #a8b8a8;"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Citations -->
+  <div id="citationsContainer" class="mt-8 hidden" style="max-width: 1000px; margin: 0 auto 32px auto;">
+    <h4 class="text-base font-bold mb-2" style="color: #c9d5c9;">📚 Key Studies Referenced</h4>
+    <div id="citationsList" class="p-4 rounded-lg text-xs" style="background: rgba(26, 26, 26, 0.5); color: #a8b8a8;"></div>
+  </div>
+
+  <!-- Sources with Links and Images -->
+  <div id="sourcesContainer" class="mt-8 hidden" style="max-width: 1000px; margin: 0 auto;">
+    <h4 class="text-base font-bold mb-2" style="color: #c9d5c9;">🔗 Source Publications & Data</h4>
+    <div id="sourcesList" class="space-y-4" style="font-size: 0.875rem;"></div>
+  </div>
+
+</div>
+
+<script>
+  let currentQuery = '';
+  let selectedAudience = 'general';
+
+  // Debug helper
+  function showDebug(message) {
+    const debugInfo = document.getElementById('debugInfo');
+    const debugText = document.getElementById('debugText');
+    debugText.textContent = message;
+    debugInfo.classList.remove('hidden');
+    setTimeout(() => debugInfo.classList.add('hidden'), 5000);
+  }
+
+  // Audience selection
+  document.querySelectorAll('.audience-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('Audience clicked:', btn.dataset.audience);
+      document.querySelectorAll('.audience-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedAudience = btn.dataset.audience;
+      console.log('Selected audience:', selectedAudience);
+      showDebug(`Audience selected: ${selectedAudience}`);
+    });
+  });
+
+  document.getElementById('sendBtn').addEventListener('click', async () => {
+    let query = document.getElementById('userInput').value.trim();
+    if (!query) return alert('Please enter a question.');
+
+    currentQuery = query;
+
+    console.log('🚀 Sending request with:', {
+      query: query,
+      audience: selectedAudience
+    });
+
+    // Show loading, hide output
+    document.getElementById('loadingIndicator').classList.remove('hidden');
+    document.getElementById('aiOutput').classList.add('hidden');
+    document.getElementById('downloadBtn').classList.add('hidden');
+
+    try {
+      const response = await fetch('/ai/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          query: query,
+          audience: selectedAudience
+        })
+      });
+      const data = await response.json();
+      console.log('📊 Received data:', data);
+
+      // Hide loading
+      document.getElementById('loadingIndicator').classList.add('hidden');
+      document.getElementById('aiOutput').classList.remove('hidden');
+      document.getElementById('downloadBtn').classList.remove('hidden');
+
+      // Clear previous content
+      document.getElementById('statsContainer').innerHTML = '';
+      document.getElementById('findingsList').innerHTML = '';
+      document.getElementById('chartsContainer').innerHTML = '';
+      document.getElementById('tablesContainer').innerHTML = '';
+      document.getElementById('progressContent').innerHTML = '';
+      document.getElementById('gapsContent').innerHTML = '';
+      document.getElementById('consensusContent').innerHTML = '';
+
+      // Hide all sections initially
+      ['progressContainer', 'gapsContainer', 'consensusContainer', 'missionContainer',
+       'findingsContainer', 'recommendationsContainer', 'citationsContainer', 'statsContainer'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+
+      // Summary - Render HTML directly
+      const summary = data.summary || 'No summary generated.';
+      const summaryEl = document.getElementById('summaryText');
+      summaryEl.innerHTML = summary; // Render HTML directly
+
+      // Scientific Progress
+      if (data.scientificProgress) {
+        document.getElementById('progressContainer').classList.remove('hidden');
+        const progress = data.scientificProgress;
+        let html = '<div style="text-align: left;">';
+
+        if (progress.achievements && Array.isArray(progress.achievements)) {
+          html += '<div class="mb-4"><h4 class="font-bold text-base mb-2" style="color: #c9d5c9;">🏆 Key Achievements:</h4>';
+          progress.achievements.forEach(a => html += `<p class="mb-2" style="color: #a8b8a8;">${a}</p>`);
+          html += '</div>';
+        }
+
+        if (progress.timeline) {
+          html += `<div class="mb-4"><h4 class="font-bold text-base mb-2" style="color: #c9d5c9;">📅 Timeline:</h4><p style="color: #a8b8a8;">${progress.timeline}</p></div>`;
+        }
+
+        if (progress.impactLevel) {
+          const impactColors = {
+            high: 'background: linear-gradient(135deg, rgba(74, 124, 89, 0.2), rgba(74, 124, 89, 0.3)); color: #4a7c59;',
+            medium: 'background: linear-gradient(135deg, rgba(139, 69, 54, 0.2), rgba(139, 69, 54, 0.3)); color: #8b4536;',
+            emerging: 'background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15)); color: #c9d5c9;'
+          };
+          const style = impactColors[progress.impactLevel] || 'background: rgba(26, 26, 26, 0.5); color: #a8b8a8;';
+          html += `<div><span class="inline-block px-3 py-1 rounded-full text-sm font-semibold" style="${style}">Impact: ${progress.impactLevel.toUpperCase()}</span></div>`;
+        }
+
+        html += '</div>';
+        document.getElementById('progressContent').innerHTML = html;
+      }
+
+      // Knowledge Gaps
+      if (data.knowledgeGaps) {
+        document.getElementById('gapsContainer').classList.remove('hidden');
+        const gaps = data.knowledgeGaps;
+        let html = '<div style="text-align: left;">';
+
+        if (gaps.criticalGaps && Array.isArray(gaps.criticalGaps)) {
+          html += '<div class="mb-4"><h4 class="font-bold text-base mb-2" style="color: #c9d5c9;">❗ Critical Gaps:</h4>';
+          gaps.criticalGaps.forEach(g => html += `<p class="mb-2 pl-3 border-l-2" style="color: #a8b8a8; border-left-color: #8b4536;">${g}</p>`);
+          html += '</div>';
+        }
+
+        if (gaps.suggestedStudies && Array.isArray(gaps.suggestedStudies)) {
+          html += '<div class="mb-4"><h4 class="font-bold text-base mb-2" style="color: #c9d5c9;">🔬 Suggested Future Studies:</h4>';
+          gaps.suggestedStudies.forEach(s => html += `<p class="mb-2" style="color: #a8b8a8;">${s}</p>`);
+          html += '</div>';
+        }
+
+        if (gaps.researchPriority) {
+          html += `<div><span class="inline-block px-3 py-1 rounded-full text-sm font-semibold" style="background: linear-gradient(135deg, rgba(139, 69, 54, 0.2), rgba(139, 69, 54, 0.3)); color: #8b4536;">Priority: ${gaps.researchPriority.toUpperCase()}</span></div>`;
+        }
+
+        html += '</div>';
+        document.getElementById('gapsContent').innerHTML = html;
+      }
+
+      // Consensus/Disagreement
+      if (data.consensus) {
+        document.getElementById('consensusContainer').classList.remove('hidden');
+        const consensus = data.consensus;
+        let html = '<div class="space-y-4">';
+
+        if (consensus.agreements && Array.isArray(consensus.agreements)) {
+          html += '<div><h4 class="font-bold text-lg mb-2" style="color: #4a7c59;">✅ Areas of Consensus:</h4><ul class="space-y-2">';
+          consensus.agreements.forEach(a => html += `<li class="p-3 rounded border-l-4" style="background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(74, 124, 89, 0.2)); border-left-color: #4a7c59; color: #a8b8a8;">${a}</li>`);
+          html += '</ul></div>';
+        }
+
+        if (consensus.disagreements && Array.isArray(consensus.disagreements)) {
+          html += '<div><h4 class="font-bold text-lg mb-2" style="color: #8b4536;">⚠️ Areas of Debate:</h4><ul class="space-y-2">';
+          consensus.disagreements.forEach(d => html += `<li class="p-3 rounded border-l-4" style="background: linear-gradient(135deg, rgba(139, 69, 54, 0.15), rgba(139, 69, 54, 0.2)); border-left-color: #8b4536; color: #a8b8a8;">${d}</li>`);
+          html += '</ul></div>';
+        }
+
+        if (consensus.confidenceLevel) {
+          html += `<div><span class="inline-block px-3 py-1 rounded-full text-sm font-semibold" style="background: linear-gradient(135deg, rgba(74, 124, 89, 0.2), rgba(74, 124, 89, 0.3)); color: #4a7c59;">Confidence: ${consensus.confidenceLevel.toUpperCase()}</span></div>`;
+        }
+
+        html += '</div>';
+        document.getElementById('consensusContent').innerHTML = html;
+      }
+
+      // Mission Relevance
+      if (data.missionRelevance) {
+        document.getElementById('missionContainer').classList.remove('hidden');
+        const mission = data.missionRelevance;
+
+        if (mission.moonMissions) {
+          document.getElementById('moonRelevance').textContent = mission.moonMissions;
+        }
+        if (mission.marsMissions) {
+          document.getElementById('marsRelevance').textContent = mission.marsMissions;
+        }
+
+        if (mission.riskFactors && mission.mitigationStrategies) {
+          let riskHtml = '';
+          riskHtml += '<div class="p-4 rounded-lg" style="background: linear-gradient(135deg, rgba(139, 69, 54, 0.15), rgba(139, 69, 54, 0.2)); text-align: left;"><h5 class="font-bold mb-2 text-sm" style="color: #c9d5c9;">⚠️ Risks:</h5>';
+          mission.riskFactors.forEach(r => riskHtml += `<p class="mb-1 text-sm" style="color: #a8b8a8;">${r}</p>`);
+          riskHtml += '</div>';
+
+          riskHtml += '<div class="p-4 rounded-lg" style="background: linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(74, 124, 89, 0.2)); text-align: left;"><h5 class="font-bold mb-2 text-sm" style="color: #c9d5c9;">🛡️ Mitigation:</h5>';
+          mission.mitigationStrategies.forEach(m => riskHtml += `<p class="mb-1 text-sm" style="color: #a8b8a8;">${m}</p>`);
+          riskHtml += '</div>';
+
+          document.getElementById('riskMitigationContent').innerHTML = riskHtml;
+        }
+      }
+
+      // Statistics Cards
+      if (data.statistics) {
+        const statsContainer = document.getElementById('statsContainer');
+        statsContainer.classList.remove('hidden');
+
+        Object.entries(data.statistics).forEach(([key, value]) => {
+          const card = document.createElement('div');
+          card.className = 'stat-card';
+          card.innerHTML = `
+            <div class="text-sm font-semibold uppercase opacity-80">${key.replace(/([A-Z])/g, ' $1').trim()}</div>
+            <div class="text-2xl font-bold mt-2">${Array.isArray(value) ? value.join(', ') : value}</div>
+          `;
+          statsContainer.appendChild(card);
+        });
+      }
+
+      // Key Findings
+      if (data.keyFindings && Array.isArray(data.keyFindings) && data.keyFindings.length > 0) {
+        document.getElementById('findingsContainer').classList.remove('hidden');
+        const findingsList = document.getElementById('findingsList');
+
+        data.keyFindings.forEach((finding, idx) => {
+          const item = document.createElement('div');
+          item.className = 'finding-item';
+          item.innerHTML = `<strong>Finding ${idx + 1}:</strong> ${finding}`;
+          findingsList.appendChild(item);
+        });
+      }
+
+      // Charts - Professional styling
+      if (data.charts && Array.isArray(data.charts)) {
+        const chartsContainer = document.getElementById('chartsContainer');
+
+        data.charts.forEach((chartData, idx) => {
+          const chartWrapper = document.createElement('div');
+          chartWrapper.className = 'mb-8';
+          chartWrapper.innerHTML = `
+            <h3 class="text-lg font-bold mb-3" style="color: #c9d5c9;">${chartData.title || 'Chart ' + (idx + 1)}</h3>
+            <div class="chart-container p-4 rounded-lg shadow-md" style="max-width: 800px; margin: 0 auto; background: rgba(26, 26, 26, 0.7);">
+              <canvas id="chart${idx}"></canvas>
+            </div>
+          `;
+          chartsContainer.appendChild(chartWrapper);
+
+          const canvas = document.getElementById(`chart${idx}`);
+
+          // Color palettes
+          const colorPalette = [
+            'rgba(54, 162, 235, 0.8)',
+            'rgba(255, 99, 132, 0.8)',
+            'rgba(255, 206, 86, 0.8)',
+            'rgba(75, 192, 192, 0.8)',
+            'rgba(153, 102, 255, 0.8)',
+            'rgba(255, 159, 64, 0.8)'
+          ];
+
+          const borderColorPalette = [
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 99, 132, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+          ];
+
+          const backgroundColors = chartData.backgroundColor || colorPalette;
+          const borderColors = chartData.borderColor || borderColorPalette;
+
+          new Chart(canvas, {
+            type: chartData.type || 'bar',
+            data: {
+              labels: chartData.x || [],
+              datasets: [{
+                label: chartData.title || 'Data',
+                data: chartData.y || [],
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 2,
+                fill: chartData.type === 'line' ? false : true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  labels: {
+                    font: { size: 12, weight: 'bold' },
+                    padding: 15
+                  }
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  padding: 12,
+                  titleFont: { size: 14 },
+                  bodyFont: { size: 13 }
+                }
+              },
+              scales: chartData.type !== 'pie' && chartData.type !== 'doughnut' ? {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                  ticks: { font: { size: 11 } }
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 11 } }
+                }
+              } : {}
+            }
+          });
+        });
+      }
+
+      // Tables - Enhanced styling
+      if (data.tables && Array.isArray(data.tables)) {
+        const tablesContainer = document.getElementById('tablesContainer');
+
+        data.tables.forEach((table, idx) => {
+          const tableDiv = document.createElement('div');
+          tableDiv.className = 'p-6 rounded-lg shadow-md mb-6';
+          tableDiv.style.maxWidth = '1000px';
+          tableDiv.style.margin = '0 auto 24px auto';
+          tableDiv.style.background = 'rgba(26, 26, 26, 0.7)';
+          tableDiv.innerHTML = `
+            <h3 class="text-lg font-bold mb-3" style="color: #c9d5c9;">${table.title || 'Table ' + (idx + 1)}</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full" style="font-size: 0.875rem; table-layout: auto;">
+                <thead>
+                  <tr style="background: linear-gradient(135deg, #4a7c59, #8b4536); color: white;">
+                    ${table.columns.map(c => `<th class="px-3 py-2 text-center font-semibold text-sm align-middle" style="vertical-align: middle;">${c}</th>`).join('')}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${table.rows.map((r, ridx) => `
+                    <tr style="background: ${ridx % 2 === 0 ? 'rgba(42, 26, 26, 0.3)' : 'rgba(26, 26, 26, 0.3)'}; color: #a8b8a8;">
+                      ${r.map(v => `<td class='px-3 py-2 text-sm align-top' style="vertical-align: top; border-bottom: 1px solid rgba(74, 124, 89, 0.2);">${v}</td>`).join('')}
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+          tablesContainer.appendChild(tableDiv);
+        });
+      }
+
+      // Recommendations - Audience-based
+      if (data.recommendations) {
+        const recs = data.recommendations;
+
+        // Check if it's the new format (object with audience keys) or old format (array)
+        if (typeof recs === 'object' && !Array.isArray(recs)) {
+          document.getElementById('recommendationsContainer').classList.remove('hidden');
+
+          if (recs.forScientists && Array.isArray(recs.forScientists) && recs.forScientists.length > 0) {
+            document.getElementById('scientistRec').classList.remove('hidden');
+            const ul = document.getElementById('scientistRec').querySelector('ul');
+            recs.forScientists.forEach(r => {
+              const li = document.createElement('li');
+              li.textContent = r;
+              ul.appendChild(li);
+            });
+          }
+
+          if (recs.forManagers && Array.isArray(recs.forManagers) && recs.forManagers.length > 0) {
+            document.getElementById('managerRec').classList.remove('hidden');
+            const ul = document.getElementById('managerRec').querySelector('ul');
+            recs.forManagers.forEach(r => {
+              const li = document.createElement('li');
+              li.textContent = r;
+              ul.appendChild(li);
+            });
+          }
+
+          if (recs.forMissionPlanners && Array.isArray(recs.forMissionPlanners) && recs.forMissionPlanners.length > 0) {
+            document.getElementById('architectRec').classList.remove('hidden');
+            const ul = document.getElementById('architectRec').querySelector('ul');
+            recs.forMissionPlanners.forEach(r => {
+              const li = document.createElement('li');
+              li.textContent = r;
+              ul.appendChild(li);
+            });
+          }
+        } else if (Array.isArray(recs) && recs.length > 0) {
+          // Fallback for old format
+          document.getElementById('recommendationsContainer').classList.remove('hidden');
+          document.getElementById('scientistRec').classList.remove('hidden');
+          const ul = document.getElementById('scientistRec').querySelector('ul');
+          recs.forEach(r => {
+            const li = document.createElement('li');
+            li.textContent = r;
+            ul.appendChild(li);
+          });
+        }
+      }
+
+      // Citations
+      if (data.citations && Array.isArray(data.citations) && data.citations.length > 0) {
+        document.getElementById('citationsContainer').classList.remove('hidden');
+        const citationsList = document.getElementById('citationsList');
+        citationsList.innerHTML = '<ul class="list-disc list-inside space-y-1">';
+        data.citations.forEach(c => {
+          citationsList.innerHTML += `<li>${c}</li>`;
+        });
+        citationsList.innerHTML += '</ul>';
+      }
+
+      // Sources with Links and Images
+      if (data.sourcesMetadata && Array.isArray(data.sourcesMetadata) && data.sourcesMetadata.length > 0) {
+        document.getElementById('sourcesContainer').classList.remove('hidden');
+        const sourcesList = document.getElementById('sourcesList');
+
+        data.sourcesMetadata.forEach((source, idx) => {
+          const sourceCard = document.createElement('div');
+          sourceCard.className = 'p-6 rounded-lg shadow-md border-l-4';
+          sourceCard.style.background = 'linear-gradient(135deg, rgba(74, 124, 89, 0.15), rgba(139, 69, 54, 0.15))';
+          sourceCard.style.borderLeftColor = '#4a7c59';
+
+          let html = `<h5 class="font-bold text-lg mb-2" style="color: #c9d5c9;">${source.title || 'Source ' + (idx + 1)}</h5>`;
+
+          // Links
+          if (source.link) {
+            html += `<p class="mb-2"><a href="${source.link}" target="_blank" class="underline" style="color: #4a7c59;">🔗 View Publication</a></p>`;
+          }
+          if (source.doi) {
+            html += `<p class="mb-2"><a href="https://doi.org/${source.doi}" target="_blank" class="underline" style="color: #4a7c59;">📄 DOI: ${source.doi}</a></p>`;
+          }
+          if (source.osdrId) {
+            html += `<p class="mb-2"><a href="https://osdr.nasa.gov/bio/repo/data/studies/${source.osdrId}" target="_blank" class="underline" style="color: #4a7c59;">🛰️ OSDR: ${source.osdrId}</a></p>`;
+          }
+
+          // Images - Try direct URL first, fallback to proxy
+          if (source.imageUrls) {
+            const images = source.imageUrls.split(',').map(url => url.trim()).filter(url => url.length > 0);
+            if (images.length > 0) {
+              html += '<div class="mt-4"><h6 class="font-semibold mb-2">📸 Images:</h6><div class="grid grid-cols-2 md:grid-cols-3 gap-4">';
+              images.forEach(imgUrl => {
+                html += `<a href="${imgUrl}" target="_blank">
+                  <img src="${imgUrl}" alt="Publication image" crossorigin="anonymous"
+                       class="w-full h-40 object-cover rounded-lg shadow hover:shadow-xl transition-shadow cursor-pointer"
+                       onerror="
+                         console.log('Direct load failed, trying proxy for: ${imgUrl}');
+                         this.src = '/api/image-proxy?url=' + encodeURIComponent('${imgUrl}');
+                         this.onerror = function() {
+                           console.error('Proxy also failed for: ${imgUrl}');
+                           this.parentElement.style.display='none';
+                         };
+                       ">
+                </a>`;
+              });
+              html += '</div></div>';
+            }
+          }
+
+          sourceCard.innerHTML = html;
+          sourcesList.appendChild(sourceCard);
+        });
+      }
+
+    } catch (error) {
+      document.getElementById('loadingIndicator').classList.add('hidden');
+      alert('Error: ' + error.message);
+    }
+  });
+
+  // PDF Download
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    if (currentQuery) {
+      window.location.href = `/report/generate?query=${encodeURIComponent(currentQuery)}`;
+    }
+  });
+</script>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Dragons AstroGenesis | NASA BioScience AI Dashboard</p>
+</footer>
+
+</body>
+</html>

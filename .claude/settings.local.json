@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn test:*)",
+      "Bash(./mvnw test:*)",
+      "Bash(mvn clean:*)",
+      "Bash(Select-Object -Last 100)",
+      "Bash(./mvnw.cmd clean:*)",
+      "Bash(psql:*)",
+      "Bash(mvnw.cmd clean:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

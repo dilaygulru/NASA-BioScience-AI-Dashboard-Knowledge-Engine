@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: 'Dragons AstroGenesis'">Dragons AstroGenesis</title>
+    <link rel="stylesheet" href="/css/nasa.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <img src="/images/mylogo.jpg" alt="Dragons AstroGenesis Logo" class="logo">
+        <nav>
+            <ul>
+                <li><a th:href="@{/}" th:classappend="${activePage == 'home'} ? 'active' : ''">Home</a></li>
+                <li><a th:href="@{/ai-dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active' : ''">AstroLog</a></li>
+                <li><a th:href="@{/publications}" th:classappend="${activePage == 'research'} ? 'active' : ''">AstroHistory</a></li>
+                <li><a th:href="@{/ai}" th:classappend="${activePage == 'chat'} ? 'active' : ''">AstroChat</a></li>
+                <li><a th:href="@{/about}" th:classappend="${activePage == 'about'} ? 'active' : ''">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <div class="container my-4" th:fragment="content">
+            <!-- Sayfa içeriği buraya gelecek -->
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2025 Dragons AstroGenesis | NASA BioScience AI Dashboard</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

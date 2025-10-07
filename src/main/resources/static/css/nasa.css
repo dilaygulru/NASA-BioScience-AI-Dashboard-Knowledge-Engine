@@ -1,0 +1,239 @@
+/* === Genel Ayarlar - Modern Tech Pastel Tema === */
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: linear-gradient(135deg, #1a1a1a 0%, #1e2a1a 25%, #1a2e1a 50%, #2a1a1a 75%, #2a1e1a 100%);
+    color: #e6e6ea;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    text-align: center;
+    overflow-x: hidden;
+}
+
+/* === Header ve Navbar === */
+header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(139, 69, 54, 0.3);
+}
+
+header .logo {
+    height: 55px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+nav a {
+    text-decoration: none;
+    color: #b8c9b8;
+    font-weight: 600;
+    font-size: 18px;
+    position: relative;
+    transition: color 0.3s;
+}
+
+nav a:hover,
+nav a.active {
+    color: #d4a59a;
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 0%;
+    height: 2px;
+    background: linear-gradient(90deg, #4a7c59, #8b4536);
+    transition: width 0.3s;
+}
+
+nav a:hover::after,
+nav a.active::after {
+    width: 100%;
+}
+
+/* === Hero Section === */
+.hero {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    position: relative;
+    gap: 40px;
+}
+
+.hero-content {
+    max-width: 600px;
+    z-index: 2;
+}
+
+.hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #c9d5c9;
+}
+
+.hero-content span {
+    color: #d4a59a;
+    background: linear-gradient(135deg, #4a7c59, #8b4536);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 30px;
+    color: #a8b8a8;
+}
+
+/* === Hero Image === */
+.hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-image img {
+    max-width: 450px;
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.hero-image img:hover {
+    transform: scale(1.05);
+}
+
+/* === Buttons === */
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    background: linear-gradient(135deg, #4a7c59, #8b4536);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(74, 124, 89, 0.4);
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, #3a5c42, #6d3428);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(74, 124, 89, 0.6);
+}
+
+.btn.secondary {
+    background: transparent;
+    border: 2px solid #4a7c59;
+    color: #c9d5c9;
+}
+
+.btn.secondary:hover {
+    background: linear-gradient(135deg, #4a7c59, #8b4536);
+    color: white;
+    border-color: transparent;
+}
+
+/* === Cards Section === */
+.cards-section {
+    padding: 60px 20px;
+    background: rgba(26, 26, 26, 0.4);
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.card {
+    background: rgba(42, 26, 26, 0.6);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid rgba(139, 69, 54, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(139, 69, 54, 0.4);
+    border-color: rgba(74, 124, 89, 0.4);
+}
+
+.card h3 {
+    color: #d4a59a;
+    margin-bottom: 15px;
+}
+
+.card p {
+    color: #a8b8a8;
+    line-height: 1.6;
+}
+
+/* === Footer === */
+footer {
+    background: rgba(26, 26, 26, 0.95);
+    padding: 20px;
+    font-size: 14px;
+    text-align: center;
+    margin-top: auto;
+    color: #b8c9b8;
+    border-top: 1px solid rgba(74, 124, 89, 0.3);
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-content h1 {
+        font-size: 2.3rem;
+    }
+
+    .hero-image img {
+        max-width: 280px;
+    }
+
+    nav ul {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+}
